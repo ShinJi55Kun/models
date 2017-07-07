@@ -114,7 +114,7 @@ class PTBModel(object):
       # the BasicLSTMCell will need a reuse parameter which is unfortunately not
       # defined in TensorFlow 1.0. To maintain backwards compatibility, we add
       # an argument check here:
-      if 'reuse' in inspect.getargspec(
+      if 'reuse' in inspect.getargspec(   #这个函数可以获取传入函数的参数列表，所以lstm_cell('reuse',..)的话就
           tf.contrib.rnn.BasicLSTMCell.__init__).args:
         return tf.contrib.rnn.BasicLSTMCell(
             size, forget_bias=0.0, state_is_tuple=True,
@@ -123,7 +123,7 @@ class PTBModel(object):
         return tf.contrib.rnn.BasicLSTMCell(
             size, forget_bias=0.0, state_is_tuple=True)
     attn_cell = lstm_cell
-    if is_training and config.keep_prob < 1:
+    if is_training and config.keep_prob < 1:    #keep_prob是什么？？？？
       def attn_cell():
         return tf.contrib.rnn.DropoutWrapper(
             lstm_cell(), output_keep_prob=config.keep_prob)
@@ -137,7 +137,7 @@ class PTBModel(object):
           "embedding", [vocab_size, size], dtype=data_type())
       inputs = tf.nn.embedding_lookup(embedding, input_.input_data)
 
-    if is_training and config.keep_prob < 1:
+    if is_training and config.keep_prob < 1:    #keep_prob是节点不被dropout的概率，是dropout的超参数～～
       inputs = tf.nn.dropout(inputs, config.keep_prob)
 
     # Simplified version of models/tutorials/rnn/rnn.py's rnn().
