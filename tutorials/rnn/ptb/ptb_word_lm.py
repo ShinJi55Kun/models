@@ -149,13 +149,14 @@ class PTBModel(object):
     # inputs = tf.unstack(inputs, num=num_steps, axis=1)
     # outputs, state = tf.contrib.rnn.static_rnn(
     #     cell, inputs, initial_state=self._initial_state)
-    outputs = []
+    outputs = [] //初始化输出为空
     state = self._initial_state  //初始化cell的状态
     with tf.variable_scope("RNN"): //将操作都定义在“RNN”变量域中
       for time_step in range(num_steps): //从1循环至截短长度
         if time_step > 0: tf.get_variable_scope().reuse_variables()//若循环次数大于1，则lstm参数变量可共享
         (cell_output, state) = cell(inputs[:, time_step, :], state)//根据定义的lstm cell进行不断迭代向后传输信息
-
+      outputs = cell_output //循环的最终输出即为lstm的embedding层向量
+    
     output = tf.reshape(tf.stack(axis=1, values=outputs), [-1, size])
     softmax_w = tf.get_variable(
         "softmax_w", [size, vocab_size], dtype=data_type())
