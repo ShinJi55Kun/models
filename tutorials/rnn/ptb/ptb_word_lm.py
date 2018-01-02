@@ -123,9 +123,9 @@ class PTBModel(object):
         return tf.contrib.rnn.BasicLSTMCell(
             size, forget_bias=0.0, state_is_tuple=True)
     attn_cell = lstm_cell
-    if is_training and config.keep_prob < 1:
+    if is_training and config.keep_prob < 1: //若为训练阶段且dropout保留率小于1
       def attn_cell():
-        return tf.contrib.rnn.DropoutWrapper(
+        return tf.contrib.rnn.DropoutWrapper( //则为lstm网络封装dropout，dropout率为超参数
             lstm_cell(), output_keep_prob=config.keep_prob)
     cell = tf.contrib.rnn.MultiRNNCell(
         [attn_cell() for _ in range(config.num_layers)], state_is_tuple=True)
@@ -150,12 +150,11 @@ class PTBModel(object):
     # outputs, state = tf.contrib.rnn.static_rnn(
     #     cell, inputs, initial_state=self._initial_state)
     outputs = []
-    state = self._initial_state
-    with tf.variable_scope("RNN"):
-      for time_step in range(num_steps):
-        if time_step > 0: tf.get_variable_scope().reuse_variables()
-        (cell_output, state) = cell(inputs[:, time_step, :], state)
-        outputs.append(cell_output)
+    state = self._initial_state  //初始化cell的状态
+    with tf.variable_scope("RNN"): //将操作都定义在“RNN”变量域中
+      for time_step in range(num_steps): //从1循环至截短长度
+        if time_step > 0: tf.get_variable_scope().reuse_variables()//若循环次数大于1，则lstm参数变量可共享
+        (cell_output, state) = cell(inputs[:, time_step, :], state)//根据定义的lstm cell进行不断迭代向后传输信息
 
     output = tf.reshape(tf.stack(axis=1, values=outputs), [-1, size])
     softmax_w = tf.get_variable(
